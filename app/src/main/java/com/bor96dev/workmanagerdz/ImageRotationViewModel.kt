@@ -7,6 +7,8 @@ class ImageRotationViewModel(application : Application): AndroidViewModel(applic
 
     private val repository = ImageRotationRepository(application)
 
+    private val _state = MutableStateFlow()
+
 
 
 }
