@@ -35,10 +35,6 @@ fun OriginalImageSection(imageUri: String) {
             )
 
             val file = File(imageUri)
-            Log.d(
-                "OriginalImageSection",
-                "Trying to load original image from: $imageUri, file exists: ${file.exists()}"
-            )
             if (file.exists() && file.length() > 0) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)

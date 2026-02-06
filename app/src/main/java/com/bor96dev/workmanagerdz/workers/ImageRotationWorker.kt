@@ -44,11 +44,6 @@ class ImageRotationWorker(
 
             if (outputFile.exists() && outputFile.length() > 0) {
                 inputFile.delete()
-                android.util.Log.d(
-                    "ApplyFilterWorker",
-                    "Original file deleted: ${inputFile.absolutePath}"
-                )
-
                 Result.success(
                     workDataOf(WorkConstants.OUTPUT_URI_KEY to outputFile.absolutePath)
                 )
