@@ -14,18 +14,14 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class ImageRotationViewModel(application: Application) : AndroidViewModel(application) {
-
     private val repository = ImageRotationRepository(application)
 
     private val _state = MutableStateFlow(ImageRotationState())
     val state: StateFlow<ImageRotationState> = _state.asStateFlow()
-
-
     fun updateImageUrl(url: String) {
         _state.value = _state.value.copy(
             imageUrl = url
         )
-
         if (url.isNotBlank()) {
             downloadOriginalImage(url)
         }
@@ -33,12 +29,10 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
 
     private fun downloadOriginalImage(url: String) {
         _state.value = _state.value.copy(isLoadingOriginal = true, error = null)
-
         viewModelScope.launch {
             try {
                 val downloadWork = repository.createDownloadWork(url)
                 repository.enqueueDownloadWork(downloadWork)
-
                 repository.getWorkInfosForUniqueWork(WorkConstants.IMAGE_PROCESSING_WORK_CHAIN)
                     .collect { workInfos ->
                         val downloadWorkInfo = workInfos.firstOrNull {
@@ -69,9 +63,7 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
                                     return@collect
                                 }
 
-                                else -> {
-
-                                }
+                                else -> {}
                             }
                         }
                     }
@@ -134,6 +126,7 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
                                     currentStep = ProcessingStep.APPLYING_ROTATION
                                 )
                             }
+
                             WorkInfo.State.SUCCEEDED -> {
                                 if (_state.value.currentStep == ProcessingStep.APPLYING_ROTATION) {
                                     _state.value = _state.value.copy(
@@ -142,12 +135,14 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
                                     )
                                 }
                             }
+
                             WorkInfo.State.FAILED -> {
                                 _state.value = _state.value.copy(
                                     isRotating = false,
                                     error = "Rotation failed"
                                 )
                             }
+
                             else -> {}
                         }
                     }
@@ -160,8 +155,10 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
                                     currentStep = ProcessingStep.UPLOADING
                                 )
                             }
+
                             WorkInfo.State.SUCCEEDED -> {
-                                val resultUri = rotationWork?.outputData?.getString(WorkConstants.OUTPUT_URI_KEY)
+                                val resultUri =
+                                    rotationWork?.outputData?.getString(WorkConstants.OUTPUT_URI_KEY)
                                 if (_state.value.currentStep != ProcessingStep.COMPLETED) {
                                     _state.value = _state.value.copy(
                                         rotatedImageUri = resultUri,
@@ -171,12 +168,14 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
                                     )
                                 }
                             }
+
                             WorkInfo.State.FAILED -> {
                                 _state.value = _state.value.copy(
                                     isRotating = false,
                                     error = "Upload failed"
                                 )
                             }
+
                             else -> {}
                         }
                     }

@@ -36,8 +36,6 @@ class ImageRotationWorker(
                 )
 
             val rotatedBitmap = applyRotation(bitmap)
-
-
             val outputFileName = "filtered_image_${System.currentTimeMillis()}.jpg"
             val outputFile = File(context.filesDir, outputFileName)
             FileOutputStream(outputFile).use { out ->
@@ -60,7 +58,6 @@ class ImageRotationWorker(
                     workDataOf(WorkConstants.ERROR_MESSAGE_KEY to "Failed to save filtered image")
                 )
             }
-
         } catch (e: Exception) {
             Result.failure(
                 workDataOf(WorkConstants.ERROR_MESSAGE_KEY to e.localizedMessage)
