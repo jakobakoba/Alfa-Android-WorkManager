@@ -141,7 +141,7 @@ private fun OriginalImageSection(imageUri: String) {
 @Composable
 private fun ResultImageSection(
     imageUri: String,
-    isProcessing: Boolean,
+    isRotating: Boolean,
     onSaveClick: () -> Unit
 ) {
     Card(
@@ -153,7 +153,7 @@ private fun ResultImageSection(
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
             Text(
-                text = if (isProcessing) "Processing..." else "Processed Image",
+                text = if (isRotating) "Rotating..." else "Rotated Image",
                 style = MaterialTheme.typography.titleMedium
             )
 
@@ -164,23 +164,14 @@ private fun ResultImageSection(
                         .data(file)
                         .crossfade(true)
                         .build(),
-                    contentDescription = "Processed image",
+                    contentDescription = "Rotated image",
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(300.dp),
                     contentScale = ContentScale.Fit
                 )
-
-                if (!isProcessing) {
-                    Button(
-                        onClick = onSaveClick,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Save Image")
-                    }
-                }
             } else {
-                Text("Processed image file not found or empty: $imageUri")
+                Text("Rotated image file not found or empty: $imageUri")
             }
         }
     }

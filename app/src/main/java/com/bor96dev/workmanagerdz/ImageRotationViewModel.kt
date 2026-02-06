@@ -4,6 +4,7 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
+import com.bor96dev.workmanagerdz.repository.ImageRotationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -74,6 +75,82 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
                     error = "Failed to load original image: ${e.message}"
                 )
             }
+        }
+    }
+
+    fun startImageRotation(){
+        val currentState = _state.value
+        if (currentState.downloadedImageUri.isNullOrBlank()) {
+            _state.value = currentState.copy(error = "Please wait for image to load or enter a valid URL")
+            return
+        }
+
+        if (currentState.isRotating) return
+
+        viewModelScope.launch{
+            _state.value = currentState.copy(
+                isRotating = true,
+                progress = 0f,
+                currentStep = ProcessingStep.APPLYING_ROTATION,
+                error = null,
+                rotatedImageUri = null
+            )
+
+            try {
+                val rotateWork = repository.createRotationWork(currentState.downloadedImageUri!!)
+
+            }
+        }
+    }
+
+    private fun observeRotationWorkProgress(){
+        viewModelScope.launch {
+            repository.getWorkInfosForUniqueWork("rotation_work_unique")
+                .collect {workInfos ->
+                    val filterWork = workInfos.firstOrNull{
+                        it.tags.contains("com.bor96dev.workmanagerdz.workers.ImageRotationWorker")
+                    }
+
+                    if (filterWork != null) {
+                        when (filterWork.state) {
+                            WorkInfo.State.RUNNING -> {
+                                _state.value = _state.value.copy (
+                                    progress = 0.8f,
+                                    currentStep = ProcessingStep.APPLYING_ROTATION
+                                )
+                            }
+                            WorkInfo.State.SUCCEEDED -> {
+                                val resultUri = filterWork.outputData.getString(WorkConstants.OUTPUT_URI_KEY)
+                                _state.value = _state.value.copy(
+                                    isRotating = false,
+                                    progress = 1f,
+                                    currentStep = ProcessingStep.COMPLETED,
+                                    rotatedImageUri = resultUri
+                                )
+                            }
+
+                            WorkInfo.State.FAILED -> {
+                                val errorMessage = filterWork.outputData.getString(WorkConstants.ERROR_MESSAGE_KEY)
+                                    ?: "Filter processing failed"
+                                _state.value = _state.value.copy(
+                                    isRotating = false,
+                                    progress = 0f,
+                                    currentStep = ProcessingStep.IDLE,
+                                    error = errorMessage
+                                )
+                            }
+                            WorkInfo.State.CANCELLED -> {
+                                _state.value = _state.value.copy(
+                                    isRotating = false,
+                                    progress = 0f,
+                                    currentStep = ProcessingStep.IDLE,
+                                    error = "Processing cancelled"
+                                )
+                            }
+                            else -> {}
+                        }
+                    }
+                }
         }
     }
 }

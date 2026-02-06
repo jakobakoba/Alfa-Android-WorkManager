@@ -18,4 +18,5 @@ enum class ProcessingStep {
     IDLE,
     DOWNLOADING,
     APPLYING_ROTATION,
+    COMPLETED
 }
