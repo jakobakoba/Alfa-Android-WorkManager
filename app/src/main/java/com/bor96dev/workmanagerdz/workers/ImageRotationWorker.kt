@@ -7,7 +7,7 @@ import android.graphics.Matrix
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.bor96dev.workmanagerdz.WorkConstants
+import com.bor96dev.workmanagerdz.data.WorkConstants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File

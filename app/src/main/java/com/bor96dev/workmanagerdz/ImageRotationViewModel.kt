@@ -4,6 +4,9 @@ import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.work.WorkInfo
+import com.bor96dev.workmanagerdz.data.ImageRotationState
+import com.bor96dev.workmanagerdz.data.ProcessingStep
+import com.bor96dev.workmanagerdz.data.WorkConstants
 import com.bor96dev.workmanagerdz.repository.ImageRotationRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow

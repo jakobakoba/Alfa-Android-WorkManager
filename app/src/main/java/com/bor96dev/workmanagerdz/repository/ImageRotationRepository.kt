@@ -8,7 +8,7 @@ import androidx.work.Operation
 import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
-import com.bor96dev.workmanagerdz.WorkConstants
+import com.bor96dev.workmanagerdz.data.WorkConstants
 import com.bor96dev.workmanagerdz.workers.DownloadImageWorker
 import com.bor96dev.workmanagerdz.workers.ImageRotationWorker
 import com.bor96dev.workmanagerdz.workers.UploadWorker
@@ -71,6 +71,4 @@ class ImageRotationRepository(private val context: Context) {
     fun cancelWork(workName: String) {
         workManager.cancelUniqueWork(workName)
     }
-
-
 }

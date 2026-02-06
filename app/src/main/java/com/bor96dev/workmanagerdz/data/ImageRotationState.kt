@@ -1,4 +1,4 @@
-package com.bor96dev.workmanagerdz
+package com.bor96dev.workmanagerdz.data
 
 import androidx.compose.runtime.Immutable
 

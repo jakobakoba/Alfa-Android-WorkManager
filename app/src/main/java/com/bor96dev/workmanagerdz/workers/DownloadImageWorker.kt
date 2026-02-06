@@ -5,7 +5,7 @@ import android.graphics.BitmapFactory
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import androidx.work.workDataOf
-import com.bor96dev.workmanagerdz.WorkConstants
+import com.bor96dev.workmanagerdz.data.WorkConstants
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -40,8 +40,7 @@ class DownloadImageWorker(
             val file = File(context.filesDir, fileName)
 
             java.io.FileOutputStream(file).use { out ->
-                val compressed = bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, out)
-                android.util.Log.d("DownloadWorker", "Compression successful: $compressed")
+                bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, out)
             }
 
             if (file.exists() && file.length() > 0) {

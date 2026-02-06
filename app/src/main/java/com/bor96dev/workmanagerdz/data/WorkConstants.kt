@@ -1,4 +1,4 @@
-package com.bor96dev.workmanagerdz
+package com.bor96dev.workmanagerdz.data
 
 object WorkConstants {
     const val IMAGE_URL_KEY = "image_url"
