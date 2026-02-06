@@ -32,6 +32,7 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
         viewModelScope.launch {
             try {
                 val downloadWork = repository.createDownloadWork(url)
+                repository.enqueueDownloadWork(downloadWork)
 
                 repository.getWorkInfosForUniqueWork(WorkConstants.IMAGE_PROCESSING_WORK_CHAIN)
                     .collect { workInfos ->
@@ -97,8 +98,12 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
             )
 
             try {
-                val rotateWork = repository.createRotationWork(currentState.downloadedImageUri!!)
-
+                observeRotationWorkProgress()
+            } catch (e: Exception) {
+                _state.value = currentState.copy(
+                    isRotating = false,
+                    error = e.localizedMessage ?: "Unknown error occurred"
+                )
             }
         }
     }
@@ -152,5 +157,19 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
                     }
                 }
         }
+    }
+
+    fun cancelProcessing() {
+        repository.cancelWork("filter_work_unique")
+        repository.cancelWork(WorkConstants.IMAGE_PROCESSING_WORK_CHAIN)
+        _state.value = _state.value.copy(
+            isLoadingOriginal = false,
+            isRotating = false,
+            progress = 0f,
+            currentStep = ProcessingStep.IDLE,
+            downloadedImageUri = null,
+            rotatedImageUri = null,
+            error = "Processing cancelled"
+        )
     }
 }

@@ -16,6 +16,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -97,6 +98,65 @@ fun ImageRotationScreen(
                 text = error,
                 color = MaterialTheme.colorScheme.error,
                 style = MaterialTheme.typography.bodySmall
+            )
+        }
+
+        if (state.isLoadingOriginal) {
+            LoadingOriginalImageSection()
+        } else {
+            state.downloadedImageUri?.let { uri ->
+                OriginalImageSection(imageUri = uri)
+            }
+        }
+
+        if (state.downloadedImageUri == null && !state.isLoadingOriginal && state.imageUrl.isNotBlank()) {
+            Button(
+                onClick = { viewModel.updateImageUrl(state.imageUrl) },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Download Image")
+            }
+        }
+
+        Button(
+            onClick = {
+                if (state.isRotating) {
+                    viewModel.cancelProcessing()
+                } else {
+                    viewModel.startImageRotation()
+                }
+            },
+            modifier = Modifier.fillMaxWidth(),
+            enabled = state.downloadedImageUri != null && !state.isRotating && !state.isLoadingOriginal
+        ) {
+            Text(
+                if (state.isRotating) "Cancel Processing" else "Apply Filter"
+            )
+        }
+    }
+}
+
+@Composable
+private fun LoadingOriginalImageSection() {
+    Card(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(
+                text = "Original Image",
+                style = MaterialTheme.typography.titleMedium
+            )
+
+            CircularProgressIndicator()
+
+            Text(
+                text = "Loading image...",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

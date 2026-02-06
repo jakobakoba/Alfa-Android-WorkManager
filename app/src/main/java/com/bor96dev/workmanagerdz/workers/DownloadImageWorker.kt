@@ -39,6 +39,11 @@ class DownloadImageWorker(
             val fileName = "downloaded_image_${System.currentTimeMillis()}.jpg"
             val file = File(context.filesDir, fileName)
 
+            java.io.FileOutputStream(file).use { out ->
+                val compressed = bitmap.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, out)
+                android.util.Log.d("DownloadWorker", "Compression successful: $compressed")
+            }
+
             if (file.exists() && file.length() > 0) {
                 Result.success(
                     workDataOf(WorkConstants.OUTPUT_URI_KEY to file.absolutePath)
