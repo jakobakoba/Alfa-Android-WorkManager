@@ -98,6 +98,8 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
             )
 
             try {
+                val rotateWork = repository.createRotationWork(currentState.downloadedImageUri)
+                repository.enqueueRotationWork(rotateWork)
                 observeRotationWorkProgress()
             } catch (e: Exception) {
                 _state.value = currentState.copy(

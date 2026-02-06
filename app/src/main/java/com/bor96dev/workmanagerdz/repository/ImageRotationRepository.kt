@@ -26,6 +26,14 @@ class ImageRotationRepository(private val context: Context) {
             .build()
     }
 
+    fun enqueueRotationWork(rotationWork: OneTimeWorkRequest): Operation {
+        return workManager.enqueueUniqueWork(
+            "rotation_work_unique",
+            ExistingWorkPolicy.REPLACE,
+            rotationWork
+        )
+    }
+
     fun enqueueDownloadWork(downloadWork: OneTimeWorkRequest): Operation {
         return workManager
             .beginUniqueWork(
