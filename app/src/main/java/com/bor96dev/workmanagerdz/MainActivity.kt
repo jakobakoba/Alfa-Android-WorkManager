@@ -30,7 +30,7 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun ImageRotationScreen(
-    viewModel: MainViewModel = viewModel(),
+    viewModel: ImageRotationViewModel = viewModel(),
     modifier: Modifier = Modifier
 ) {
 
