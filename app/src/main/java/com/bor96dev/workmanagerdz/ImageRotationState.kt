@@ -4,5 +4,8 @@ import androidx.compose.runtime.Immutable
 
 @Immutable
 data class ImageRotationState (
-    val imageUrl: String = "https://images.pexels.com/photos/7524329/pexels-photo-7524329.jpeg"
+    val imageUrl: String = "https://images.pexels.com/photos/7524329/pexels-photo-7524329.jpeg",
+    val error: String? = null,
+    val downloadedImageUri: String? = null,
+    val rotatedImageUri: String? = null
 )
