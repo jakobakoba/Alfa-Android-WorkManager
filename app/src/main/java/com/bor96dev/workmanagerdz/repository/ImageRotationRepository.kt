@@ -11,11 +11,12 @@ import androidx.work.workDataOf
 import com.bor96dev.workmanagerdz.WorkConstants
 import com.bor96dev.workmanagerdz.workers.DownloadImageWorker
 import com.bor96dev.workmanagerdz.workers.ImageRotationWorker
+import com.bor96dev.workmanagerdz.workers.UploadWorker
 import kotlinx.coroutines.flow.Flow
 
 class ImageRotationRepository(private val context: Context) {
 
-    private val workManager = WorkManager.Companion.getInstance(context)
+    private val workManager = WorkManager.getInstance(context)
 
     fun createDownloadWork(url: String): OneTimeWorkRequest {
         return OneTimeWorkRequestBuilder<DownloadImageWorker>()
@@ -26,11 +27,20 @@ class ImageRotationRepository(private val context: Context) {
             .build()
     }
 
-    fun enqueueRotationWork(rotationWork: OneTimeWorkRequest): Operation {
-        return workManager.enqueueUniqueWork(
+    fun startChain(inputFilePath: String){
+        val rotationWork = createRotationWork(inputFilePath)
+
+        val uploadWork = OneTimeWorkRequestBuilder<UploadWorker>()
+            .addTag("UPLOAD_TAG")
+            .build()
+
+        workManager.beginUniqueWork(
             "rotation_work_unique",
             ExistingWorkPolicy.REPLACE,
             rotationWork
+        )
+            .then(uploadWork)
+            .enqueue(
         )
     }
 

@@ -29,6 +29,8 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
     }
 
     private fun downloadOriginalImage(url: String) {
+        _state.value = _state.value.copy(isLoadingOriginal = true, error = null)
+
         viewModelScope.launch {
             try {
                 val downloadWork = repository.createDownloadWork(url)
@@ -79,16 +81,17 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
         }
     }
 
-    fun startImageRotation(){
+    fun startImageRotation() {
         val currentState = _state.value
         if (currentState.downloadedImageUri.isNullOrBlank()) {
-            _state.value = currentState.copy(error = "Please wait for image to load or enter a valid URL")
+            _state.value =
+                currentState.copy(error = "Please wait for image to load or enter a valid URL")
             return
         }
 
         if (currentState.isRotating) return
 
-        viewModelScope.launch{
+        viewModelScope.launch {
             _state.value = currentState.copy(
                 isRotating = true,
                 progress = 0f,
@@ -98,8 +101,7 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
             )
 
             try {
-                val rotateWork = repository.createRotationWork(currentState.downloadedImageUri)
-                repository.enqueueRotationWork(rotateWork)
+                repository.startChain(currentState.downloadedImageUri)
                 observeRotationWorkProgress()
             } catch (e: Exception) {
                 _state.value = currentState.copy(
@@ -110,48 +112,66 @@ class ImageRotationViewModel(application: Application) : AndroidViewModel(applic
         }
     }
 
-    private fun observeRotationWorkProgress(){
+    private fun observeRotationWorkProgress() {
         viewModelScope.launch {
             repository.getWorkInfosForUniqueWork("rotation_work_unique")
-                .collect {workInfos ->
-                    val filterWork = workInfos.firstOrNull{
+                .collect { workInfos ->
+                    val rotationWork = workInfos.find {
                         it.tags.contains("com.bor96dev.workmanagerdz.workers.ImageRotationWorker")
                     }
+                    val uploadWork = workInfos.find {
+                        it.tags.contains("com.bor96dev.workmanagerdz.workers.UploadWorker")
+                    }
 
-                    if (filterWork != null) {
-                        when (filterWork.state) {
+                    rotationWork?.let { work ->
+                        when (work.state) {
                             WorkInfo.State.RUNNING -> {
-                                _state.value = _state.value.copy (
-                                    progress = 0.8f,
+                                _state.value = _state.value.copy(
+                                    progress = 0.3f,
                                     currentStep = ProcessingStep.APPLYING_ROTATION
                                 )
                             }
                             WorkInfo.State.SUCCEEDED -> {
-                                val resultUri = filterWork.outputData.getString(WorkConstants.OUTPUT_URI_KEY)
-                                _state.value = _state.value.copy(
-                                    isRotating = false,
-                                    progress = 1f,
-                                    currentStep = ProcessingStep.COMPLETED,
-                                    rotatedImageUri = resultUri
-                                )
+                                if (_state.value.currentStep == ProcessingStep.APPLYING_ROTATION) {
+                                    _state.value = _state.value.copy(
+                                        currentStep = ProcessingStep.UPLOADING,
+                                        progress = 0.5f
+                                    )
+                                }
                             }
-
                             WorkInfo.State.FAILED -> {
-                                val errorMessage = filterWork.outputData.getString(WorkConstants.ERROR_MESSAGE_KEY)
-                                    ?: "Filter processing failed"
                                 _state.value = _state.value.copy(
                                     isRotating = false,
-                                    progress = 0f,
-                                    currentStep = ProcessingStep.IDLE,
-                                    error = errorMessage
+                                    error = "Rotation failed"
                                 )
                             }
-                            WorkInfo.State.CANCELLED -> {
+                            else -> {}
+                        }
+                    }
+
+                    uploadWork?.let { work ->
+                        when (work.state) {
+                            WorkInfo.State.RUNNING -> {
+                                _state.value = _state.value.copy(
+                                    progress = 0.8f,
+                                    currentStep = ProcessingStep.UPLOADING
+                                )
+                            }
+                            WorkInfo.State.SUCCEEDED -> {
+                                val resultUri = rotationWork?.outputData?.getString(WorkConstants.OUTPUT_URI_KEY)
+                                if (_state.value.currentStep != ProcessingStep.COMPLETED) {
+                                    _state.value = _state.value.copy(
+                                        rotatedImageUri = resultUri,
+                                        isRotating = false,
+                                        progress = 1f,
+                                        currentStep = ProcessingStep.COMPLETED
+                                    )
+                                }
+                            }
+                            WorkInfo.State.FAILED -> {
                                 _state.value = _state.value.copy(
                                     isRotating = false,
-                                    progress = 0f,
-                                    currentStep = ProcessingStep.IDLE,
-                                    error = "Processing cancelled"
+                                    error = "Upload failed"
                                 )
                             }
                             else -> {}

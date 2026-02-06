@@ -7,10 +7,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -69,7 +71,11 @@ fun ImageRotationScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
-        Row {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
             OutlinedTextField(
                 value = state.imageUrl,
                 onValueChange = { viewModel.updateImageUrl(it) },
@@ -80,6 +86,7 @@ fun ImageRotationScreen(
                 singleLine = true,
                 isError = state.error?.isNotBlank() == true
             )
+            Spacer(modifier = Modifier.width(16.dp))
             val clipboardManager = LocalClipboardManager.current
             Button(
                 onClick = {
@@ -109,6 +116,8 @@ fun ImageRotationScreen(
                 OriginalImageSection(imageUri = uri)
             }
         }
+        Spacer(modifier = Modifier.height(16.dp))
+
 
         if (state.downloadedImageUri == null && !state.isLoadingOriginal && state.imageUrl.isNotBlank()) {
             Button(
@@ -118,6 +127,8 @@ fun ImageRotationScreen(
                 Text("Download Image")
             }
         }
+
+        Spacer(modifier = Modifier.height(16.dp))
 
         Button(
             onClick = {
@@ -131,7 +142,7 @@ fun ImageRotationScreen(
             enabled = state.downloadedImageUri != null && !state.isRotating && !state.isLoadingOriginal
         ) {
             Text(
-                if (state.isRotating) "Cancel Processing" else "Rotate the image"
+                if (state.isRotating) "Cancel Processing" else "Send & Get rotated Image"
             )
         }
 
@@ -162,7 +173,9 @@ private fun ProcessingProgressSection(state: ImageRotationState) {
                 text = when (state.currentStep) {
                     ProcessingStep.DOWNLOADING -> "Downloading image..."
                     ProcessingStep.APPLYING_ROTATION -> "Applying rotation..."
-                    else -> "Rotating..."
+                    ProcessingStep.UPLOADING -> "Uploading image..."
+                    ProcessingStep.COMPLETED -> "Completed!"
+                    ProcessingStep.IDLE -> ""
                 },
                 style = MaterialTheme.typography.bodyLarge
             )
@@ -186,7 +199,7 @@ private fun LoadingOriginalImageSection() {
         modifier = Modifier.fillMaxWidth()
     ) {
         Column(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
