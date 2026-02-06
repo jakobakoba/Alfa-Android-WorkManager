@@ -3,9 +3,11 @@ package com.bor96dev.workmanagerdz
 import android.content.Context
 import androidx.work.OneTimeWorkRequest
 import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.WorkInfo
 import androidx.work.WorkManager
 import androidx.work.workDataOf
 import com.bor96dev.workmanagerdz.workers.DownloadImageWorker
+import kotlinx.coroutines.flow.Flow
 
 class ImageRotationRepository(private val context: Context) {
 
@@ -17,5 +19,9 @@ class ImageRotationRepository(private val context: Context) {
                 workDataOf(WorkConstants.IMAGE_URL_KEY to url)
             )
             .build()
+    }
+
+    fun getWorkInfosForUniqueWork(workName: String): Flow<List<WorkInfo>> {
+        return workManager.getWorkInfosForUniqueWorkFlow(workName)
     }
 }
